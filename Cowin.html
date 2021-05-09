@@ -59,6 +59,8 @@
                                 $scope.pincodes += "     ";
                             }
 
+                        } else {
+                            $scope.pincodes = "There are no vaccines available for this district at this moment. Please try after some time";
                         }
 
                     });
@@ -123,7 +125,7 @@
             <div class="col-sm-6">&nbsp</div>
         </div>
 
-        <div class="row">
+        <div class="row" style="color: red">
             <div class="col-sm-4">
                 Available Pincodes :
             </div>
@@ -152,7 +154,7 @@
         </div>
         <div class="row">
             <div class="col-sm-offset-4 col-sm-4">
-                <button ng-click="startTracking()" class="btn btn-lg btn-default">Start Tracking</button>
+                <button ng-click="startTracking()" class="btn btn-lg btn-primary">Start Tracking</button>
             </div>
 
         </div>
@@ -161,7 +163,7 @@
         <div class="col-sm-6">&nbsp</div>
     </div>
 
-        <div class="row">
+        <div class="row" style="color: blue">
             <div class="col-sm-12"><h4>Preferred Locations</h4></div>
         </div>
 
@@ -215,7 +217,7 @@
             <div class="col-sm-6">&nbsp</div>
         </div>
 
-        <div class="row">
+        <div class="row" style="color: blue">
             <div class="col-sm-12"><h4>Other Available Locations</h4></div>
         </div>
 
