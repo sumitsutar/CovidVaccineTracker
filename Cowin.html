@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+
+
+    <script>
+        var app = angular.module('TrackerAppBySumit', []);
+        app.filter('LocationInclusionFilter', function () {
+            return function (input, scope) {
+                var filteredList = [];
+                for (var i = 0; input != undefined && i < input.length; i++) {
+                    if (scope != undefined && scope.desiredPinCodesList != undefined && scope.desiredPinCodesList.includes(input[i].pincode.toString())) {
+                        filteredList.push(input[i]);
+                    }
+                }
+                return filteredList;
+            };
+        });
+
+
+        app.filter('LocationExclusionFilter', function () {
+            return function (input, scope) {
+                var filteredList = [];
+                for (var i = 0; input != undefined && i < input.length; i++) {
+                    if (scope != undefined && scope.desiredPinCodesList != undefined && !scope.desiredPinCodesList.includes(input[i].pincode.toString())) {
+                        filteredList.push(input[i]);
+                    }
+                }
+                return filteredList;
+            };
+        });
+
+        app.controller('cowinController', function ($scope, $http, $filter) {
+
+            $scope.currentDate = $filter('date')(new Date(), 'dd-MM-yyyy');
+            $http.get("https://cdn-api.co-vin.in/api/v2/admin/location/districts/21")
+                .then(function (response) {
+                    $scope.districts = response.data.districts;
+                    $scope.selectedDistrict = "None";
+
+                });
+
+
+            $scope.listPinCodes = function () {
+                console.log("Looking Up For Pincodes for District Id: " + $scope.selectedDistrict);
+                $http.get("https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByDistrict?district_id=" + $scope.selectedDistrict + "&date=" + $scope.currentDate)
+                    .then(function (response) {
+                        $scope.pincodes = "";
+                        if (response.data.sessions.length > 0) {
+                            var sessions = response.data.sessions;
+                            for (var i = 0; i < sessions.length; i++) {
+                                $scope.pincodes += sessions[i].pincode;
+                                $scope.pincodes += "     ";
+                            }
+
+                        }
+
+                    });
+            };
+
+
+            $scope.startTracking = function () {
+
+                setInterval(function () {
+                    console.log("Desire Pincodes Are : " + $scope.desiredPinCodes);
+                    $http.get("https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByDistrict?district_id=" + $scope.selectedDistrict + "&date=" + $scope.currentDate)
+                        .then(function (response) {
+                            if (response.data.sessions.length > 0) {
+                                $scope.desiredPinCodesList = $scope.desiredPinCodes.split(",");
+                                $scope.locations = response.data.sessions;
+                            }
+
+                        });
+
+                }, 5000);
+
+
+            }
+
+
+        });
+
+
+    </script>
+
+
+</head>
+
+<body>
+
+<div ng-app="TrackerAppBySumit" class="container">
+
+    <div class="row">
+        <h1>Cowin Vaccination Notification</h1>
+    </div>
+
+    <div class="container-fluid">
+
+    </div>
+
+    <div ng-controller="cowinController">
+
+        <div class="row">
+            <div class="col-sm-4">Select District:</div>
+            <div class="col-sm-6">
+                <select class="form-control" ng-model="selectedDistrict" ng-change="listPinCodes()">
+                    <option value="None"> Please Select Your District</option>
+                    <option ng-repeat="district in districts" value="{{district.district_id}}">
+                        {{district.district_name}}
+                    </option>
+                </select>
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-6">&nbsp</div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-4">
+                Available Pincodes :
+            </div>
+            <div class="col-sm-6">
+                {{pincodes}}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-6">&nbsp</div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-4">
+                Input Desired Pincode (s)
+            </div>
+            <div class="col-sm-6">
+                <input type="text" class="form-control" ng-model="desiredPinCodes"
+                       placeholder="You can input multiple comma separated pincodes - e.g. 425409,425416"/>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-sm-6">&nbsp</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-offset-4 col-sm-4">
+                <button ng-click="startTracking()" class="btn btn-lg btn-default">Start Tracking</button>
+            </div>
+
+        </div>
+
+        <div class="row">
+        <div class="col-sm-6">&nbsp</div>
+    </div>
+
+        <div class="row">
+            <div class="col-sm-12"><h4>Preferred Locations</h4></div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-sm-6">&nbsp</div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-sm-4">
+                <h4>Name</h4>
+            </div>
+
+            <div class="col-sm-3">
+                <h4>Pincode</h4>
+            </div>
+
+            <div class="col-sm-2">
+                <h4>Available Vaccines</h4>
+            </div>
+
+            <div class="col-sm-3">
+                <h4>Min Age Limit</h4>
+            </div>
+
+        </div>
+
+        <div class="row" ng-repeat="location in locations | LocationInclusionFilter:this">
+            <div class="col-sm-4">
+                {{location.name}}
+            </div>
+
+            <div class="col-sm-3">
+                {{location.pincode}}
+            </div>
+
+            <div class="col-sm-2">
+                {{location.available_capacity}}
+            </div>
+
+            <div class="col-sm-3">
+                {{location.min_age_limit}}
+            </div>
+
+        </div>
+
+
+
+        <div class="row">
+            <div class="col-sm-6">&nbsp</div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12"><h4>Other Available Locations</h4></div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-sm-6">&nbsp</div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-sm-4">
+                <h4>Name</h4>
+            </div>
+
+            <div class="col-sm-3">
+                <h4>Pincode</h4>
+            </div>
+
+            <div class="col-sm-2">
+                <h4>Available Vaccines</h4>
+            </div>
+
+            <div class="col-sm-3">
+                <h4>Min Age Limit</h4>
+            </div>
+
+        </div>
+
+        <div class="row" ng-repeat="location in locations | LocationExclusionFilter:this">
+            <div class="col-sm-4">
+                {{location.name}}
+            </div>
+
+            <div class="col-sm-3">
+                {{location.pincode}}
+            </div>
+
+            <div class="col-sm-2">
+                {{location.available_capacity}}
+            </div>
+
+            <div class="col-sm-3">
+                {{location.min_age_limit}}
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+</div> <!-- End Of Container Div -->
+
+
+</body>
+</html>
