@@ -2,7 +2,7 @@
 Just thought of making a single page application which can be run from any machine without having to install any additional software.
  It will display real-time Vaccine Availability on Selected pincodes as well as other nearby pincodes.
 
-Please note - this provide very limited functionality. I just developed it to help people find vaccines more easily.
+Please note - this provides very limited functionality. I just developed it to help people find vaccines more easily.
 
 All you have to do is - 
 
